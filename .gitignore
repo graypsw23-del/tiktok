@@ -1,0 +1,9 @@
+.env
+data/today_state.json
+data/today_script.txt
+data/used_animals.log
+data/part_counter.json
+work/
+logs/*.log
+__pycache__/
+*.pyc
