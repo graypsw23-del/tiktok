@@ -20,6 +20,13 @@ STATE_FILE = BASE_DIR / "data" / "today_state.json"
 PEXELS_SEARCH_URL = "https://api.pexels.com/videos/search"
 MIN_CLIP_DURATION = 3  # seconds, skip clips shorter than this
 TARGET_CLIP_COUNT = 5
+# Pexels sits behind Cloudflare, which blocks urllib's default
+# "Python-urllib/x.y" user-agent (Cloudflare error 1010). A normal
+# browser-style UA gets through fine.
+USER_AGENT = (
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+)
 
 
 def get_api_key():
@@ -36,7 +43,9 @@ def get_api_key():
 
 def search_videos(query, api_key, per_page=15):
     url = f"{PEXELS_SEARCH_URL}?query={urllib.parse.quote(query)}&per_page={per_page}&orientation=portrait"
-    req = urllib.request.Request(url, headers={"Authorization": api_key})
+    req = urllib.request.Request(
+        url, headers={"Authorization": api_key, "User-Agent": USER_AGENT}
+    )
     with urllib.request.urlopen(req, timeout=30) as resp:
         return json.loads(resp.read())
 
@@ -52,7 +61,9 @@ def pick_best_file(video):
 
 
 def download_file(url, dest_path):
-    urllib.request.urlretrieve(url, dest_path)
+    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+    with urllib.request.urlopen(req, timeout=60) as resp, open(dest_path, "wb") as out:
+        out.write(resp.read())
 
 
 def fetch_footage(work_dir, query=None, target_count=TARGET_CLIP_COUNT):

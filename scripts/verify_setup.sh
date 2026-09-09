@@ -17,8 +17,8 @@ fi
 
 echo
 echo "== python deps =="
-if python3 -c "import edge_tts" 2>/dev/null; then
-    echo "OK: edge-tts importable"
+if python3 -c "import gtts" 2>/dev/null; then
+    echo "OK: gTTS importable"
 else
     echo "MISSING: run 'pip3 install -r requirements.txt'"
     FAIL=1
@@ -44,18 +44,21 @@ else
 fi
 
 echo
-echo "== edge-tts (free TTS) =="
-if edge-tts --voice en-US-GuyNeural --text "Testing." --write-media /tmp/edge_tts_test.mp3 >/tmp/edge_tts_test.log 2>&1; then
-    if [ -s /tmp/edge_tts_test.mp3 ]; then
-        echo "OK: edge-tts produced audio"
-        rm -f /tmp/edge_tts_test.mp3
+echo "== gTTS (free TTS) =="
+if python3 -c "
+from gtts import gTTS
+gTTS(text='Testing.', lang='en', tld='us').save('/tmp/gtts_test.mp3')
+" >/tmp/gtts_test.log 2>&1; then
+    if [ -s /tmp/gtts_test.mp3 ]; then
+        echo "OK: gTTS produced audio"
+        rm -f /tmp/gtts_test.mp3
     else
-        echo "FAILED: edge-tts ran but produced no audio, see /tmp/edge_tts_test.log"
+        echo "FAILED: gTTS ran but produced no audio, see /tmp/gtts_test.log"
         FAIL=1
     fi
 else
-    echo "FAILED: edge-tts could not reach its TTS service, see /tmp/edge_tts_test.log"
-    echo "        (this needs outbound HTTPS access to speech.platform.bing.com)"
+    echo "FAILED: gTTS could not reach Google Translate's TTS endpoint, see /tmp/gtts_test.log"
+    echo "        (this needs outbound HTTPS access to translate.google.com)"
     FAIL=1
 fi
 
